@@ -31,14 +31,21 @@ const Allocator = std.mem.Allocator;
     // Add headers
     pythia.addIncludePath(.{ .path = "include/" });
     pythia.addIncludePath(.{ .path = lhapdf.builder.h_dir });
-
+    
+    // Add weird plugin source
+    const lhapdf_src_h_path = try root_dir.realpathAlloc(alloc, "plugin_src/LHAPDF6.cc");
+    pythia.addCSourceFile(.{
+        .file = .{ .path = lhapdf_src_h_path },
+        .flags = &.{ "-std=c++11" }
+    }); 
+    
     // Add source
     const cpp_src = try list_cpp_src(alloc, try root_dir.openDir("src/", .{}));
     const cpp_flags = &.{
         "-std=c++11",
-        try std.fmt.allocPrint(alloc, "-DXMLDIR=\"{s}\"", .{ try xml_dir.realpathAlloc(alloc, ".") })
+        try std.fmt.allocPrint(alloc, "-DXMLDIR=\"{s}\"", .{ try xml_dir.realpathAlloc(alloc, ".") }),
     };
-    pythia.addCSourceFiles(cpp_src.items, cpp_flags);
+    pythia.addCSourceFiles(cpp_src.items, cpp_flags);   
 
     // Install headers
     pythia.installHeadersDirectory("include", "");
@@ -51,12 +58,13 @@ const Allocator = std.mem.Allocator;
 /// non-main source files in the `src_dir`.
 fn list_cpp_src(alloc: Allocator, src_dir: std.fs.Dir) !std.ArrayList([]u8) {
     var source_files = std.ArrayList([]u8).init(alloc);
-    var walker = (try src_dir.openIterableDir(".", .{})).iterate();
+    var walker = (try src_dir.openIterableDir(".", .{ .no_follow = true })).iterate();
     while (try walker.next()) |entry| {
         if (!std.mem.endsWith(u8, entry.name, ".cc")) {
             continue;
         }
-        try source_files.append(try src_dir.realpathAlloc(alloc, entry.name));
+        const realpath = try src_dir.realpathAlloc(alloc, entry.name);
+        try source_files.append(realpath);
     }
     return source_files;
 }

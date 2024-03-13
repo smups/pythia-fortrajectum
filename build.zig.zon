@@ -3,13 +3,14 @@
 	.version = "8.3.11-alpha",
 	.dependencies = .{
 		.lhapdf_fortrajectum = .{
-			.url = "https://github.com/smups/lhapdf-fortrajectum/archive/refs/tags/6.5.4-alpha-4.tar.gz",
-			.hash = "1220c5cc322fd4f04d552cd390b0cacbd0f0630eeab2bd041c1cf7ebdcf275b2382a"
+			.url = "https://github.com/smups/lhapdf-fortrajectum/archive/refs/tags/6.5.4-alpha5.tar.gz",
+			.hash = "1220a10eb65f72ec80145031a603451a3509f1ea4931a9578a01632d15681b26d341"
 		},
 	},
 	.paths = .{
 		"include",
 		"src",
+		"plugin_src",
 		"build.zig",
 		"build.zig.zon"
 	},
