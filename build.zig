@@ -1,8 +1,5 @@
 const std = @import("std");
-
 const Allocator = std.mem.Allocator;
-
-const default_lhapdf_ddir = "lhapdf-dir";
 
  pub fn build(b: *std.Build) !void {
     // // Initialise allocator
@@ -17,16 +14,25 @@ const default_lhapdf_ddir = "lhapdf-dir";
     const optimize = b.standardOptimizeOption(.{});
 
     // Add options for lhapdf
-    const lhapdf_ddir = b.option([]const u8, "lhapdf-dir", "path to lhapdf data directory containing pdf's")
-        orelse try get_default_lhapdfddir_path(alloc, root_dir);
+    const lhapdf_ddir = b.option([]const u8, "lhapdf-dir", "path to lhapdf data directory containing pdf's");
     const install_pdfs = b.option(bool, "download-pdfs", "whether to download and install pdf's") orelse false;
 
-    const lhapdf = b.dependency("lhapdf_fortrajectum", .{
-        .target = target,
-        .optimize = optimize,
-        .@"data-dir" = lhapdf_ddir,
-        .@"download-pdfs" = install_pdfs
-    });
+    const lhapdf = blk: {
+        if (lhapdf_ddir) |path| {
+            break :blk b.dependency("lhapdf", .{
+                .target = target,
+                .optimize = optimize,
+                .@"data-dir" = path,
+                .@"download-pdfs" = install_pdfs
+            });
+        } else {
+            break :blk b.dependency("lhapdf", .{
+                .target = target,
+                .optimize = optimize,
+                .@"download-pdfs" = install_pdfs
+            });
+        }
+    };
 
     // Create compiled static lib
     const pythia = b.addStaticLibrary(.{
@@ -39,7 +45,6 @@ const default_lhapdf_ddir = "lhapdf-dir";
 
     // Add headers
     pythia.addIncludePath(.{ .path = "include/" });
-    pythia.addIncludePath(.{ .path = lhapdf.builder.h_dir });
     
     // Add weird plugin source
     const lhapdf_src_h_path = try root_dir.realpathAlloc(alloc, "plugin_src/LHAPDF6.cc");
@@ -76,14 +81,4 @@ fn list_cpp_src(alloc: Allocator, src_dir: std.fs.Dir) !std.ArrayList([]u8) {
         try source_files.append(realpath);
     }
     return source_files;
-}
-
-fn get_default_lhapdfddir_path(alloc: Allocator, root: std.fs.Dir) ![]const u8 {
-    const ddir = root.makeOpenPath(default_lhapdf_ddir, .{}) catch |err| {
-        std.debug.print("Could not create default lhapdf data dir {s}. Err: \"{s}\"", .{
-            try root.realpathAlloc(alloc, default_lhapdf_ddir), @errorName(err)
-        }); 
-        return err; 
-    };
-    return try ddir.realpathAlloc(alloc, ".");
 }
