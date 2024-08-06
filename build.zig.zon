@@ -3,8 +3,8 @@
 	.version = "8.3.11-alpha",
 	.dependencies = .{
 		.lhapdf = .{
-			.url = "https://github.com/smups/lhapdf-fortrajectum/archive/refs/tags/6.5.4-alpha6.tar.gz",
-			.hash = "1220d71436dcb49b41a99998049118aa1780c61632ef1a3eb4405dd1ecef722ec30d"
+			.url = "https://github.com/smups/lhapdf-fortrajectum/archive/refs/tags/6.5.4-alpha7.tar.gz",
+			.hash = "12203ae53d08026e643f24fe6f1552cb94289f00f2422269f022d226c142bc177651"
 		},
 	},
 	.paths = .{

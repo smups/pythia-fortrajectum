@@ -44,41 +44,148 @@ const Allocator = std.mem.Allocator;
     pythia.linkLibrary(lhapdf.artifact("lhapdf-fortrajectum"));
 
     // Add headers
-    pythia.addIncludePath(.{ .path = "include/" });
+    pythia.addIncludePath(b.path("include"));
     
     // Add weird plugin source
-    const lhapdf_src_h_path = try root_dir.realpathAlloc(alloc, "plugin_src/LHAPDF6.cc");
     pythia.addCSourceFile(.{
-        .file = .{ .path = lhapdf_src_h_path },
+        .file = b.path("plugin_src/LHAPDF6.cc"),
         .flags = &.{ "-std=c++11" }
     }); 
     
     // Add source
-    const cpp_src = try list_cpp_src(alloc, try root_dir.openDir("src/", .{}));
     const cpp_flags = &.{
         "-std=c++11",
         try std.fmt.allocPrint(alloc, "-DXMLDIR=\"{s}\"", .{ try xml_dir.realpathAlloc(alloc, ".") }),
     };
-    pythia.addCSourceFiles(cpp_src.items, cpp_flags);   
+    pythia.addCSourceFiles(.{ .files = cpp_src, .flags = cpp_flags });   
 
     // Install headers
-    pythia.installHeadersDirectory("include", "");
+    pythia.installHeadersDirectory(b.path("include"), "", .{});
 
     // Install archive
     b.installArtifact(pythia);
 }
 
-/// This function traverses the `src_dir` and produces an `ArrayList` of all
-/// non-main source files in the `src_dir`.
-fn list_cpp_src(alloc: Allocator, src_dir: std.fs.Dir) !std.ArrayList([]u8) {
-    var source_files = std.ArrayList([]u8).init(alloc);
-    var walker = (try src_dir.openIterableDir(".", .{ .no_follow = true })).iterate();
-    while (try walker.next()) |entry| {
-        if (!std.mem.endsWith(u8, entry.name, ".cc")) {
-            continue;
-        }
-        const realpath = try src_dir.realpathAlloc(alloc, entry.name);
-        try source_files.append(realpath);
-    }
-    return source_files;
-}
+/// List of source files
+const cpp_src = &.{
+    "src/Analysis.cc",
+    "src/Basics.cc",
+    "src/BeamParticle.cc",
+    "src/BeamRemnants.cc",
+    "src/BeamSetup.cc",
+    "src/BeamShape.cc",
+    "src/BoseEinstein.cc",
+    "src/ColourReconnection.cc",
+    "src/ColourTracing.cc",
+    "src/DeuteronProduction.cc",
+    "src/DireBasics.cc",
+    "src/Dire.cc",
+    "src/DireHistory.cc",
+    "src/DireMerging.cc",
+    "src/DireMergingHooks.cc",
+    "src/DireSpace.cc",
+    "src/DireSplitInfo.cc",
+    "src/DireSplittingLibrary.cc",
+    "src/DireSplittings.cc",
+    "src/DireSplittingsEW.cc",
+    "src/DireSplittingsQCD.cc",
+    "src/DireSplittingsQED.cc",
+    "src/DireSplittingsU1new.cc",
+    "src/DireTimes.cc",
+    "src/DireWeightContainer.cc",
+    "src/Event.cc",
+    "src/ExternalMEs.cc",
+    "src/FJcore.cc",
+    "src/FragmentationFlavZpT.cc",
+    "src/FragmentationSystems.cc",
+    "src/GammaKinematics.cc",
+    "src/HadronLevel.cc",
+    "src/HadronWidths.cc",
+    "src/HardDiffraction.cc",
+    "src/HeavyIons.cc",
+    "src/HelicityBasics.cc",
+    "src/HelicityMatrixElements.cc",
+    "src/HiddenValleyFragmentation.cc",
+    "src/HIInfo.cc",
+    "src/HINucleusModel.cc",
+    "src/History.cc",
+    "src/HISubCollisionModel.cc",
+    "src/Info.cc",
+    "src/JunctionSplitting.cc",
+    "src/LesHouches.cc",
+    "src/LHEF3.cc",
+    "src/Logger.cc",
+    "src/LowEnergyProcess.cc",
+    "src/MathTools.cc",
+    "src/Merging.cc",
+    "src/MergingHooks.cc",
+    "src/MiniStringFragmentation.cc",
+    "src/MultipartonInteractions.cc",
+    "src/NucleonExcitations.cc",
+    "src/ParticleData.cc",
+    "src/ParticleDecays.cc",
+    "src/PartonDistributions.cc",
+    "src/PartonLevel.cc",
+    "src/PartonSystems.cc",
+    "src/PartonVertex.cc",
+    "src/PhaseSpace.cc",
+    "src/PhysicsBase.cc",
+    "src/Plugins.cc",
+    "src/ProcessContainer.cc",
+    "src/ProcessLevel.cc",
+    "src/Pythia.cc",
+    "src/PythiaParallel.cc",
+    "src/PythiaStdlib.cc",
+    "src/ResonanceDecays.cc",
+    "src/ResonanceWidths.cc",
+    "src/ResonanceWidthsDM.cc",
+    "src/RHadrons.cc",
+    "src/Ropewalk.cc",
+    "src/Settings.cc",
+    "src/ShowerModel.cc",
+    "src/SigmaCompositeness.cc",
+    "src/SigmaDM.cc",
+    "src/SigmaEW.cc",
+    "src/SigmaExtraDim.cc",
+    "src/SigmaGeneric.cc",
+    "src/SigmaHiggs.cc",
+    "src/SigmaLeftRightSym.cc",
+    "src/SigmaLeptoquark.cc",
+    "src/SigmaLowEnergy.cc",
+    "src/SigmaNewGaugeBosons.cc",
+    "src/SigmaOnia.cc",
+    "src/SigmaProcess.cc",
+    "src/SigmaQCD.cc",
+    "src/SigmaSUSY.cc",
+    "src/SigmaTotal.cc",
+    "src/SimpleSpaceShower.cc",
+    "src/SimpleTimeShower.cc",
+    "src/SimpleWeakShowerMEs.cc",
+    "src/SLHAinterface.cc",
+    "src/SplittingsOnia.cc",
+    "src/StandardModel.cc",
+    "src/Streams.cc",
+    "src/StringFragmentation.cc",
+    "src/StringInteractions.cc",
+    "src/StringLength.cc",
+    "src/SusyCouplings.cc",
+    "src/SusyLesHouches.cc",
+    "src/SusyResonanceWidths.cc",
+    "src/SusyWidthFunctions.cc",
+    "src/TauDecays.cc",
+    "src/UserHooks.cc",
+    "src/VinciaAntennaFunctions.cc",
+    "src/Vincia.cc",
+    "src/VinciaCommon.cc",
+    "src/VinciaDiagnostics.cc",
+    "src/VinciaEW.cc",
+    "src/VinciaFSR.cc",
+    "src/VinciaHistory.cc",
+    "src/VinciaISR.cc",
+    "src/VinciaMerging.cc",
+    "src/VinciaMergingHooks.cc",
+    "src/VinciaQED.cc",
+    "src/VinciaTrialGenerators.cc",
+    "src/VinciaWeights.cc",
+    "src/Weights.cc",
+};
