@@ -10,6 +10,7 @@
 	.paths = .{
 		"include",
 		"src",
+		"share",
 		"plugin_src",
 		"build.zig",
 		"build.zig.zon"
