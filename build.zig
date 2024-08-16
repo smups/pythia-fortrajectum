@@ -36,7 +36,7 @@ const Allocator = std.mem.Allocator;
 
     // Create compiled static lib
     const pythia = b.addStaticLibrary(.{
-        .name = "pythia_fortrajectum",
+        .name = "pythia-fortrajectum",
         .target = target,
         .optimize = optimize,
     });
