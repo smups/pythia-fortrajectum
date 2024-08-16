@@ -64,6 +64,7 @@ const Allocator = std.mem.Allocator;
 
     // Install archive
     b.installArtifact(pythia);
+    b.installArtifact(lhapdf.artifact("lhapdf-fortrajectum"));
 }
 
 /// List of source files
